@@ -45,8 +45,6 @@ sub vcl_recv {
 
     call host_to_backend_hinting;
 
-    return (pass);
-
     if (req.method != "GET") {
         return (pass);
     }
