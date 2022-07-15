@@ -84,7 +84,7 @@ sub vcl_backend_response {
     set beresp.http.X-Retries = bereq.retries;
 
     if (std.getenv("VARNISH_PROJECT_CODE") != "") {
-       set resp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
+       set beresp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
     }
 
     # if (beresp.status >= 500 && bereq.retries < 2) {
