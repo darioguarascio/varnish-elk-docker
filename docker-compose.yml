@@ -15,7 +15,7 @@ services:
     build:
       context: ./docker/varnish
       args:
-        VARNISH_VERSION: ${VARNISH_VERSION:-6.5.2-r0}
+        VARNISH_VERSION: ${VARNISH_VERSION:-6.5.2-r1}
     environment:
       ENV: ${ENV:-dev}
       VARNISHD_MEMORY: ${VARNISHD_MEMORY:-malloc,32m}
