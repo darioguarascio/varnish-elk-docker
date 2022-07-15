@@ -130,6 +130,10 @@ sub vcl_backend_response {
 sub vcl_deliver {
     set resp.http.X-Env = std.getenv("ENV");
 
+    if (std.getenv("VARNISH_PROJECT_CODE") != "") {
+       set resp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
+    }
+
     if (!req.http.X-VR && resp.http.X-Env != "dev") {
         unset resp.http.X-Powered-By;
         unset resp.http.Server;
