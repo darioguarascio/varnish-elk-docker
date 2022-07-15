@@ -83,6 +83,10 @@ sub vcl_backend_response {
     set beresp.do_gzip = true;
     set beresp.http.X-Retries = bereq.retries;
 
+    if (std.getenv("VARNISH_PROJECT_CODE") != "") {
+       set resp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
+    }
+
     # if (beresp.status >= 500 && bereq.retries < 2) {
     #     return(retry);
     # }
@@ -173,6 +177,10 @@ sub vcl_backend_error {
     set beresp.do_gzip = true;
     set beresp.http.X-Retries = bereq.retries;
     set beresp.http.X-Backend = beresp.backend.name;
+
+    if (std.getenv("VARNISH_PROJECT_CODE") != "") {
+       set beresp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
+    }
 
     set beresp.http.Content-Type = "text/html; charset=utf-8";
     set beresp.http.Retry-After = "5";
