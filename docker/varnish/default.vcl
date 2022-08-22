@@ -91,32 +91,18 @@ sub vcl_backend_response {
     #     return(retry);
     # }
 
-    if (beresp.status == 404) {
-        set beresp.ttl   = 1s;
-        set beresp.grace = 1h;
-        return(deliver);
-    }
-    else if (beresp.status >= 400 && beresp.status != 410) {
-        return(deliver);
-    } else if (beresp.status == 410) {
-        set beresp.grace = 240h;
-        set beresp.ttl   = 3h;
-        return(deliver);
+    # Using backend-generated headers to dynamically set TTL & grace period
+    #
+    if (std.integer(beresp.http.X-TTL, 0) >= 0) {
+        set beresp.ttl = std.duration( beresp.http.X-TTL + "s", 0s);
     } else {
+        set beresp.ttl = 0s;
+    }
 
-        # Using backend-generated headers to dynamically set TTL & grace period
-        #
-        if (std.integer(beresp.http.X-TTL, 0) >= 0) {
-            set beresp.ttl = std.duration( beresp.http.X-TTL + "s", 0s);
-        } else {
-            set beresp.ttl = 0s;
-        }
-
-        if (std.integer(beresp.http.X-Grace, 0) >= 0) {
-            set beresp.grace = std.duration(beresp.http.X-Grace + "s", 0s);
-        } else {
-            set beresp.grace = 0s;
-        }
+    if (std.integer(beresp.http.X-Grace, 0) >= 0) {
+        set beresp.grace = std.duration(beresp.http.X-Grace + "s", 0s);
+    } else {
+        set beresp.grace = 0s;
     }
 
 
