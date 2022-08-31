@@ -82,6 +82,10 @@ sub vcl_hit {
 
 sub vcl_backend_response {
 
+    # if (beresp.status >= 500 && bereq.retries < std.integer(std.getenv("VARNISH_RESTARTS_ON_ERROR"))) {
+    #     return(retry);
+    # }
+
     set beresp.http.X-Backend = beresp.backend.name;
     set beresp.do_gzip = true;
     set beresp.http.X-Retries = bereq.retries;
@@ -127,6 +131,9 @@ sub vcl_deliver {
     set resp.http.X-Env = std.getenv("ENV");
     set resp.http.X-ABTestHash = req.http.X-ABTestHash;
     set resp.http.X-Tld = req.http.AbtestVar-tld;
+    set resp.http.X-Cache = obj.hits;
+    set resp.http.X-Reset = req.restarts;
+    set resp.http.X-lb = server.hostname;
 
     if (std.getenv("VARNISH_PROJECT_CODE") != "") {
        set resp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
@@ -158,10 +165,9 @@ sub vcl_deliver {
         unset resp.http.X-ABTestHash;
         unset resp.http.X-Tld;
         unset resp.http.X-Timing;
-    } else {
-        set resp.http.X-Cache = obj.hits;
-        set resp.http.X-Reset = req.restarts;
-        set resp.http.X-lb = server.hostname;
+        unset resp.http.X-lb;
+        unset resp.http.X-Reset;
+        unset resp.http.X-Cache;
     }
 }
 
@@ -169,15 +175,11 @@ sub vcl_deliver {
 
 sub vcl_backend_error {
     set beresp.do_gzip = true;
-    set beresp.http.X-Retries = bereq.retries;
+    # set beresp.http.X-Retries = bereq.retries;
     set beresp.http.X-Backend = beresp.backend.name;
 
     if (std.getenv("VARNISH_PROJECT_CODE") != "") {
        set beresp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
-    }
-
-    if (beresp.status >= 500 && bereq.retries < std.integer(std.getenv("VARNISH_RESTARTS_ON_ERROR")) ) {
-        return(retry);
     }
 
     set beresp.http.Content-Type = "text/html; charset=utf-8";
