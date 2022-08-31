@@ -3,6 +3,7 @@ vcl 4.0;
 import std;
 import directors;
 
+include "abtest.vcl";
 include "varnish_backends.vcl";
 
 
@@ -42,6 +43,8 @@ sub vcl_recv {
             unset req.http.Accept-Encoding;
         }
     }
+
+    call abtest;
 
     call host_to_backend_hinting;
 
@@ -105,7 +108,6 @@ sub vcl_backend_response {
         set beresp.grace = 0s;
     }
 
-
     set beresp.http.X-Set-On = now;
     set beresp.http.X-TTL    = regsub(beresp.ttl, "\.000$", "");
     set beresp.http.X-Grace  = regsub(beresp.grace, "\.000$", "");
@@ -119,6 +121,8 @@ sub vcl_backend_response {
 
 sub vcl_deliver {
     set resp.http.X-Env = std.getenv("ENV");
+    set resp.http.X-ABTestHash = req.http.X-ABTestHash;
+    set resp.http.X-Tld = req.http.AbtestVar-tld;
 
     if (std.getenv("VARNISH_PROJECT_CODE") != "") {
        set resp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
@@ -128,11 +132,12 @@ sub vcl_deliver {
         unset resp.http.X-Powered-By;
         unset resp.http.Server;
         unset resp.http.TTL;
+        unset resp.http.Via;
+        unset resp.http.Age;
         unset resp.http.X-Varnish;
         unset resp.http.X-Backend;
         unset resp.http.X-Db;
         unset resp.http.X-Me;
-        unset resp.http.Via;
         unset resp.http.X-Project;
         unset resp.http.X-ProjectVersion;
         unset resp.http.X-Env;
@@ -145,10 +150,9 @@ sub vcl_deliver {
         unset resp.http.X-Retries;
         unset resp.http.X-Rid;
         unset resp.http.X-Rsl;
-        unset resp.http.Age;
         unset resp.http.X-Metrics;
         unset resp.http.X-ABTestHash;
-        unset resp.http.PH-ABTestHash;
+        unset resp.http.X-Tld;
         unset resp.http.X-Timing;
     } else {
         set resp.http.X-Cache = obj.hits;
