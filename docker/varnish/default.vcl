@@ -120,6 +120,10 @@ sub vcl_backend_response {
 
 
 sub vcl_deliver {
+    if (resp.status >= 500 && req.restarts < std.integer(std.getenv("VARNISH_RESTARTS_ON_ERROR"))) {
+        return(restart);
+    }
+
     set resp.http.X-Env = std.getenv("ENV");
     set resp.http.X-ABTestHash = req.http.X-ABTestHash;
     set resp.http.X-Tld = req.http.AbtestVar-tld;
@@ -170,6 +174,10 @@ sub vcl_backend_error {
 
     if (std.getenv("VARNISH_PROJECT_CODE") != "") {
        set beresp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
+    }
+
+    if (beresp.status >= 500 && bereq.retries < std.integer(std.getenv("VARNISH_RESTARTS_ON_ERROR")) ) {
+        return(retry);
     }
 
     set beresp.http.Content-Type = "text/html; charset=utf-8";
