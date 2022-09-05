@@ -124,6 +124,7 @@ sub vcl_backend_response {
 
 
 sub vcl_deliver {
+
     if (resp.status >= 500 && req.restarts < std.integer(std.getenv("VARNISH_RESTARTS_ON_ERROR"))) {
         return(restart);
     }
@@ -135,6 +136,8 @@ sub vcl_deliver {
     set resp.http.X-Reset = req.restarts;
     set resp.http.X-lb = server.hostname;
 
+
+    set resp.http.X-Project = req.http.X-Project;
     if (std.getenv("VARNISH_PROJECT_CODE") != "") {
        set resp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
     }
