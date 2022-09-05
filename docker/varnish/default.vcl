@@ -90,6 +90,7 @@ sub vcl_backend_response {
     set beresp.do_gzip = true;
     set beresp.http.X-Retries = bereq.retries;
 
+    set beresp.http.X-Project = bereq.http.X-Project;
     if (std.getenv("VARNISH_PROJECT_CODE") != "") {
        set beresp.http.X-Project = std.getenv("VARNISH_PROJECT_CODE");
     }
