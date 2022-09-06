@@ -16,7 +16,8 @@ $(command -v varnishd) -a :80 \
   -p vsl_reclen=4084 \
   -p http_resp_hdr_len=65536 \
   -p http_resp_size=98304 \
-  -p workspace_backend=131072
+  -p workspace_backend=131072 \
+  -p pipe_timeout=600
 
 
 # -D - daemoinize

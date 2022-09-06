@@ -14,9 +14,10 @@ sub vcl_purge {
 
 # For WebSockets
 sub vcl_pipe {
-     if (req.http.upgrade) {
-         set bereq.http.upgrade = req.http.upgrade;
-     }
+    if (req.http.upgrade) {
+        set bereq.http.upgrade = req.http.upgrade;
+        set bereq.http.connection = req.http.connection;
+    }
 }
 
 sub vcl_recv {
@@ -47,6 +48,10 @@ sub vcl_recv {
     call abtest;
 
     call host_to_backend_hinting;
+
+    if (req.http.upgrade ~ "(?i)websocket") {
+        return (pipe);
+    }
 
     if (req.method != "GET") {
         return (pass);
