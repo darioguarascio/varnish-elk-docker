@@ -3,7 +3,6 @@ vcl 4.0;
 import std;
 import directors;
 
-include "abtest.vcl";
 include "varnish_backends.vcl";
 
 
@@ -44,8 +43,6 @@ sub vcl_recv {
             unset req.http.Accept-Encoding;
         }
     }
-
-    call abtest;
 
     call host_to_backend_hinting;
 
