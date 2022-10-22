@@ -54,7 +54,7 @@ sub vcl_recv {
         return (pass);
     }
 
-    if ( (std.getenv("ENV") == "dev" || std.getenv("ENV") == "staging" || std.getenv("ENV") == "testing" ) && req.url ~ "\?uncached") {
+    if ( (std.getenv("ENV") == "dev" || std.getenv("ENV") == "staging" || std.getenv("ENV") == "testing" ) && std.getenv("CACHE") == "0" ) {
         return (pass);
     }
 
@@ -127,6 +127,7 @@ sub vcl_backend_response {
 
 
 sub vcl_deliver {
+
 
     if (resp.status >= 500 && req.restarts < std.integer(std.getenv("VARNISH_RESTARTS_ON_ERROR"))) {
         return(restart);
